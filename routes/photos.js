@@ -22,8 +22,6 @@ exports.form = function(req, res) {
 
 exports.submit = function(dir) {
 	return function(req, res, next) {
-		//return res.json({ title: req.files.photoImage })
-
     var img = req.files.photoImage;
     var name = req.body.photoName || img.name;
     var newPath = path.join(dir, img.name);
@@ -37,3 +35,16 @@ exports.submit = function(dir) {
     });
 	};
 };
+
+exports.download = function(dir) {
+	return function(req, res, next) {
+		var id = req.params.id;
+		Photo.findById(id, function(err, photo) {
+			if (err) return next(err);
+			var filePath = path.join(dir, photo.path);
+			var extension = filePath.substr(filePath.lastIndexOf("."));
+			var newName = (photo.name.substr(photo.name.lastIndexOf(".")) == extension) ? photo.name : photo.name + extension;
+			res.download(filePath, newName);
+		});
+	};
+}
