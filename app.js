@@ -4,11 +4,12 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-
-var routes = require('./routes/index');
-var photos = require('./routes/photos');
+var multer = require('multer');
 
 var app = express();
+
+// models
+require('./models/Photo.js')
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -20,10 +21,17 @@ app.set('photos', __dirname + '/public/photos');
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(multer({ dest: './uploads/' }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', photos.list);
+// routing
+var routes = require('./routes/index');
+var photos = require('./routes/photos');
+
+app.get('/', photos.list);
+app.get('/upload', photos.form);
+app.post('/upload', photos.submit(app.get('photos')))
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -55,6 +63,5 @@ app.use(function(err, req, res, next) {
     error: {}
   });
 });
-
 
 module.exports = app;
